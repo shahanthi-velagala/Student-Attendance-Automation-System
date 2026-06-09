@@ -1,0 +1,269 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9f6aea65-852a-4d2e-8b41-207055af6e94",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ZHQzcVyWBeA4p6xacPTHM900genOTLHyRiqz06_r858",
+          "mode": "list",
+          "cachedResultName": "student attendance tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZHQzcVyWBeA4p6xacPTHM900genOTLHyRiqz06_r858/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZHQzcVyWBeA4p6xacPTHM900genOTLHyRiqz06_r858/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "8390eed0-3283-435a-bf6d-9faa7166a982",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3W6X7WRSWCkiqDjG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ef6b2761-f393-4f38-bad1-6caddcc62660",
+              "leftValue": "={{ $json['Attendance %'] }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        96
+      ],
+      "id": "07acc166-9dbe-4006-bacc-bbe8c1c9aa20",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "680ca208-2e5f-4319-9d9e-d77e9e8f09dc",
+              "leftValue": "={{ $json['Attendance %'] }}",
+              "rightValue": 75,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "98c3c9ba-ea66-47ab-b890-eee752b81be9",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Excellent Attendance record",
+        "emailType": "text",
+        "message": "=Dear {{$json[\"Student Name\"]}}, \nCongratulations!  \nYour current attendance is {{$json[\"Attendance %\"]}}%.  \nYou are maintaining a good attendance record.Keep up the excellent work.  \nBest Regards, \nAttendance Monitoring System",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "c8c13b50-7c7a-4b40-b89a-57f324418be3",
+      "name": "Send a message",
+      "webhookId": "c8037fb9-0215-436b-aece-fccad35287ea",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "henYv1b4LLy5RSaz",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get row(s) in sheet').item.json.Email }}",
+        "subject": "Attendance Warning",
+        "emailType": "text",
+        "message": "=Dear ,{{ $('Get row(s) in sheet').item.json['Student Name'] }}\nYour current attendance is {{ $('Get row(s) in sheet').item.json['Attendance %'] }} .\nYour attendance is below the required 75%.\nPlease attend classes regularly to improve your attendance.\n\nBest Regards,\nAttendance Monitoring System",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "1eb6d258-d8d9-4e9a-b258-d11e65b0a746",
+      "name": "Send a message1",
+      "webhookId": "d3899f5d-b3d5-4a27-840f-2d95b7ba400a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "henYv1b4LLy5RSaz",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Critical Attendance Alert",
+        "emailType": "text",
+        "message": "=Dear {{$json[\"Student Name\"]}}, \nYour current attendance is {{$json[\"Attendance %\"]}}%.  \nYour attendance is critically low and requires immediate attention. \nPlease improve your attendance urgently.  \nBest Regards, \nAttendance Monitoring System",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        192
+      ],
+      "id": "149cd3c0-eabd-4fcd-8713-47d004feb0c3",
+      "name": "Send a message2",
+      "webhookId": "0c0f7ff2-3512-4a7f-a91d-1b94a7879c00",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "henYv1b4LLy5RSaz",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1a405b7d-e32b-45ae-8219-7513778d1cec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "203a93b92f895727e0a8258d0571a125344307114902eef141dd6749f2281698"
+  },
+  "nodeGroups": [],
+  "id": "yag47LrOhowGpEXk",
+  "tags": []
+}
